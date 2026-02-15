@@ -1,2 +1,512 @@
-<!-- Signature: Umaiz Sufiyan -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Finder App</title>
+    <style>
+        /* --- CSS STYLING --- */
+        :root {
+            --primary-color: #ff6b6b;
+            --secondary-color: #333;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #4a4a4a;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        /* --- Header & Menu --- */
+        header {
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links li a {
+            text-decoration: none;
+            color: var(--secondary-color);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links li a:hover {
+            color: var(--primary-color);
+        }
+
+        /* --- Search Section --- */
+        .search-container {
+            text-align: center;
+            padding: 2rem 1rem;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        }
+
+        .search-box {
+            position: relative;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        /* --- Grid Layout --- */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .recipe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        /* --- Recipe Card --- */
+        .recipe-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .card-body {
+            padding: 1.2rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+        }
+
+        .card-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .btn-view {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .btn-view:hover {
+            background-color: #ff5252;
+        }
+
+        /* --- Recipe Details Modal/View --- */
+        .recipe-details {
+            display: none; /* Hidden by default */
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .recipe-details.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid var(--secondary-color);
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .detail-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .detail-img {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .detail-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+
+        .ingredients-list li {
+            margin-bottom: 0.5rem;
+            list-style-position: inside;
+        }
+
+        .loading, .error-msg {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #666;
+            margin-top: 2rem;
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                position: absolute;
+                top: 60px;
+                left: 0;
+                background: var(--card-bg);
+                padding: 1rem;
+                box-shadow: var(--shadow);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .detail-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav class="navbar">
+            <div class="logo" onclick="app.resetHome()">🍽️ Recipe Finder</div>
+            <div class="menu-toggle" id="mobile-menu">☰</div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="app.filterCategory('Breakfast')">Breakfast</a></li>
+                <li><a href="#" onclick="app.filterCategory('Seafood')">Seafood</a></li>
+                <li><a href="#" onclick="app.filterCategory('Dessert')">Dessert</a></li>
+                <li><a href="#" onclick="app.filterCategory('Vegetarian')">Vegetarian</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="search-container" id="search-section">
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search recipes or ingredients...">
+        </div>
+    </section>
+
+    <main class="container">
+        <div id="recipe-grid" class="recipe-grid">
+            </div>
+
+        <div id="recipe-details" class="recipe-details">
+            <button class="btn-back" onclick="app.showList()">← Back to Recipes</button>
+            <div id="detail-content">
+                </div>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">Searching tasty recipes...</div>
+        <div id="error-msg" class="error-msg" style="display: none;">No recipes found. Try a different term!</div>
+    </main>
+
+    <script>
+        /* --- JAVASCRIPT LOGIC --- */
+
+        const API_BASE_URL = 'https://www.themealdb.com/api/json/v1/1/';
+
+        // App State & Elements
+        const app = {
+            gridElement: document.getElementById('recipe-grid'),
+            detailsElement: document.getElementById('recipe-details'),
+            searchSection: document.getElementById('search-section'),
+            searchInput: document.getElementById('search-input'),
+            loadingElement: document.getElementById('loading'),
+            errorElement: document.getElementById('error-msg'),
+            
+            init: function() {
+                this.addEventListeners();
+                this.fetchRecipes(''); // Load default random/initial recipes
+            },
+
+            addEventListeners: function() {
+                // Search Input Listener with Debounce
+                let timeout = null;
+                this.searchInput.addEventListener('input', (e) => {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => {
+                        this.fetchRecipes(e.target.value);
+                    }, 500);
+                });
+
+                // Mobile Menu Toggle
+                document.getElementById('mobile-menu').addEventListener('click', () => {
+                    document.querySelector('.nav-links').classList.toggle('active');
+                });
+            },
+
+            // Fetch Data from API
+            fetchRecipes: async function(query) {
+                this.showLoading(true);
+                this.showList(); // Ensure we are in list view
+                this.errorElement.style.display = 'none';
+                this.gridElement.innerHTML = '';
+
+                let url = '';
+                if (!query) {
+                    url = `${API_BASE_URL}search.php?s=`; // Default: returns common recipes
+                } else {
+                    url = `${API_BASE_URL}search.php?s=${query}`;
+                }
+
+                try {
+                    const response = await fetch(url);
+                    constdata = await response.json();
+                    
+                    if (data.meals) {
+                        this.renderGrid(data.meals);
+                    } else {
+                        // Fallback: try searching by ingredient if name search fails
+                        this.fetchByIngredient(query);
+                    }
+                } catch (error) {
+                    console.error('Error fetching recipes:', error);
+                    this.showLoading(false);
+                }
+            },
+
+            fetchByIngredient: async function(ingredient) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}filter.php?i=${ingredient}`);
+                    const data = await response.json();
+                    
+                    if (data.meals) {
+                        this.renderGrid(data.meals);
+                    } else {
+                        this.showLoading(false);
+                        this.errorElement.style.display = 'block';
+                    }
+                } catch (error) {
+                    this.showLoading(false);
+                    this.errorElement.style.display = 'block';
+                }
+            },
+
+            filterCategory: function(category) {
+                // Hide mobile menu after click
+                document.querySelector('.nav-links').classList.remove('active');
+                this.searchInput.value = ''; // Clear search
+                
+                this.showLoading(true);
+                this.showList();
+                this.gridElement.innerHTML = '';
+
+                fetch(`${API_BASE_URL}filter.php?c=${category}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.meals) this.renderGrid(data.meals);
+                        else this.errorElement.style.display = 'block';
+                    })
+                    .catch(() => this.showLoading(false));
+            },
+
+            // Render Functions
+            renderGrid: function(recipes) {
+                this.showLoading(false);
+                this.gridElement.innerHTML = recipes.map(recipe => `
+                    <div class="recipe-card" onclick="app.getRecipeDetails('${recipe.idMeal}')">
+                        <img src="${recipe.strMealThumb}" alt="${recipe.strMeal}" class="card-img" loading="lazy">
+                        <div class="card-body">
+                            <div>
+                                <h3 class="card-title">${recipe.strMeal}</h3>
+                                <p class="card-info">
+                                    ${recipe.strCategory ? recipe.strCategory : 'Recipe'} | 
+                                    ${recipe.strArea ? recipe.strArea : 'International'}
+                                </p>
+                            </div>
+                            <button class="btn-view">View Recipe</button>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            getRecipeDetails: async function(id) {
+                this.showLoading(true);
+                try {
+                    const response = await fetch(`${API_BASE_URL}lookup.php?i=${id}`);
+                    const data = await response.json();
+                    this.renderDetails(data.meals[0]);
+                } catch (error) {
+                    console.error('Error fetching details:', error);
+                    this.showLoading(false);
+                }
+            },
+
+            renderDetails: function(recipe) {
+                this.showLoading(false);
+                this.gridElement.style.display = 'none';
+                this.searchSection.style.display = 'none'; // Hide search bar in details view
+                this.detailsElement.classList.add('active');
+
+                // Helper to get ingredients
+                let ingredientsHtml = '';
+                for (let i = 1; i <= 20; i++) {
+                    const ingredient = recipe[`strIngredient${i}`];
+                    const measure = recipe[`strMeasure${i}`];
+                    if (ingredient && ingredient.trim() !== '') {
+                        ingredientsHtml += `<li>${measure} ${ingredient}</li>`;
+                    }
+                }
+
+                // Format Instructions (split by new lines for cleaner look)
+                const instructions = recipe.strInstructions
+                    .split(/\r\n|\r|\n/g)
+                    .filter(line => line.length > 5)
+                    .map(line => `<p style="margin-bottom: 10px;">• ${line}</p>`)
+                    .join('');
+
+                const detailContent = document.getElementById('detail-content');
+                detailContent.innerHTML = `
+                    <div class="detail-header">
+                        <h2>${recipe.strMeal}</h2>
+                        <p>${recipe.strCategory} | ${recipe.strArea}</p>
+                    </div>
+                    <img src="${recipe.strMealThumb}" class="detail-img" alt="${recipe.strMeal}">
+                    <div class="detail-content">
+                        <div>
+                            <h3>Ingredients</h3>
+                            <ul class="ingredients-list" style="margin-top: 10px;">
+                                ${ingredientsHtml}
+                            </ul>
+                        </div>
+                        <div>
+                            <h3>Instructions</h3>
+                            <div style="margin-top: 10px; line-height: 1.6;">
+                                ${instructions}
+                            </div>
+                            ${recipe.strYoutube ? `
+                                <div style="margin-top: 20px;">
+                                    <a href="${recipe.strYoutube}" target="_blank" 
+                                       style="color: #ff6b6b; text-decoration: none; font-weight: bold;">
+                                       Watch Video Tutorial ↗
+                                    </a>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            },
+
+            // Utility Functions
+            showList: function() {
+                this.gridElement.style.display = 'grid';
+                this.searchSection.style.display = 'block';
+                this.detailsElement.classList.remove('active');
+                this.errorElement.style.display = 'none';
+            },
+
+            showLoading: function(show) {
+                this.loadingElement.style.display = show ? 'block' : 'none';
+            },
+
+            resetHome: function() {
+                this.searchInput.value = '';
+                this.fetchRecipes('');
+            }
+        };
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+
+    </script>
+</body>
 </html>
